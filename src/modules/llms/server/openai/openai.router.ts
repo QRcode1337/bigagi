@@ -401,7 +401,7 @@ export const llmOpenAIRouter = createTRPCRouter({
       // common image fields
       const [width, height] = (config.size as any) === 'auto'
         ? [1024, 1024] // NOTE: this is broken, bad assumption, but so that we don't throw an error
-        : config.size.split('x').map(nStr => parseInt(nStr));
+        : config.size.split('x').map(nStr => parseInt(nStr, 10));
       if (!width || !height) {
         console.error(`openai.router.createImages: invalid size ${config.size}`);
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: `[OpenAI Issue] Invalid size ${config.size}` });
