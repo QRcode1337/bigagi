@@ -231,8 +231,15 @@ export function createAnthropicMessageParser(): ChatGenerateParseFunction {
       // UNDOCUMENTED - Occasionaly, the server will send errors, such as {"type": "error", "error": {"type": "overloaded_error", "message": "Overloaded"}}
       case 'error':
         hasErrored = true;
-        const { error } = JSON.parse(eventData);
-        const errorText = (error.type && error.message) ? `${error.type}: ${error.message}` : safeErrorString(error);
+        let error;
+        try {
+          const parsedData = JSON.parse(eventData);
+          error = parsedData.error;
+        } catch (parseError) {
+          console.error('Failed to parse error event data:', parseError);
+          return pt.setDialectTerminatingIssue('Server error: malformed error response', IssueSymbols.Generic);
+        }
+        const errorText = (error?.type && error?.message) ? `${error.type}: ${error.message}` : safeErrorString(error);
         return pt.setDialectTerminatingIssue(errorText || 'unknown server issue.', IssueSymbols.Generic);
 
       default:

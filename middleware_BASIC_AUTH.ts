@@ -26,7 +26,12 @@ export function middleware(request: NextRequest) {
   // Request authentication if credentials are invalid
   const base64Credentials = authHeader.split(' ')[1];
   const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-  const [username, password] = credentials.split(':');
+  const colonIndex = credentials.indexOf(':');
+  if (colonIndex === -1) {
+    return new Response('Unauthorized', unauthResponse);
+  }
+  const username = credentials.substring(0, colonIndex);
+  const password = credentials.substring(colonIndex + 1);
   if (
     !username || !password ||
     username !== process.env.HTTP_BASIC_AUTH_USERNAME ||
