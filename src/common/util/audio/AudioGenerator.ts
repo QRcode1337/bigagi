@@ -644,7 +644,7 @@ function createNoise(ctx: AudioContext, duration: number, type: 'white' | 'pink'
 
 function noteToFrequency(note: string /* = 'C4' */): number {
   const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-  const octave = parseInt(note.slice(-1));
+  const octave = parseInt(note.slice(-1), 10);
   const keyNumber = notes.indexOf(note.slice(0, -1));
 
   if (keyNumber === -1) throw new Error('Invalid note');

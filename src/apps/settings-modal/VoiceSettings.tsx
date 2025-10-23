@@ -19,7 +19,7 @@ export function VoiceSettings() {
 
   // this converts from string keys to numbers and vice versa
   const chatTimeoutValue: string = '' + chatTimeoutMs;
-  const setChatTimeoutValue = (value: string) => value && setChatTimeoutMs(parseInt(value));
+  const setChatTimeoutValue = (value: string) => value && setChatTimeoutMs(parseInt(value, 10));
 
   return <>
 
