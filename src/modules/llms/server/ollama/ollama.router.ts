@@ -233,7 +233,7 @@ export const llmOllamaRouter = createTRPCRouter({
             if (paramsNumCtx) {
               const numCtxValue: string = paramsNumCtx.split(/\s+/)[1];
               if (numCtxValue) {
-                const numCtxNumber: number = parseInt(numCtxValue);
+                const numCtxNumber: number = parseInt(numCtxValue, 10);
                 if (!isNaN(numCtxNumber))
                   contextWindow = numCtxNumber;
               }

@@ -32,6 +32,8 @@ export function middleware(request: NextRequest) {
   }
   const username = credentials.substring(0, colonIndex);
   const password = credentials.substring(colonIndex + 1);
+  const [username, ...passwordParts] = credentials.split(':');
+  const password = passwordParts.join(':');
   if (
     !username || !password ||
     username !== process.env.HTTP_BASIC_AUTH_USERNAME ||

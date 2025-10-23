@@ -71,6 +71,11 @@ export class ProcessingQueue<TItem> extends EventTarget {
     this.queue = [];
     this.inProgress.forEach(task => task.abortController.abort());
     this.inProgress.clear();
+    // Clear the rate limit timer to prevent memory leak
+    if (this.rateLimitTimer !== null) {
+      clearTimeout(this.rateLimitTimer);
+      this.rateLimitTimer = null;
+    }
     this.dispatchEvent(new QueueUpdatedEvent(this.getQueueState()));
   }
 
