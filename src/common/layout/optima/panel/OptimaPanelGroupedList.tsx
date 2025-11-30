@@ -95,6 +95,9 @@ const groupListSx: SxProps = {
 } as const;
 
 
+const PERSISTENCE_PREFIX = 'optima-panel-group:';
+
+
 export function OptimaPanelGroupedList(props: {
   title?: React.ReactNode;
   endDecorator?: React.ReactNode;
@@ -103,9 +106,16 @@ export function OptimaPanelGroupedList(props: {
   startExpanded?: boolean;
 }) {
 
+  // derived props
+  const defaultExpanded = props.startExpanded === true;
+  const persistentKey = props.persistentCollapsibleId ? `${PERSISTENCE_PREFIX}${props.persistentCollapsibleId}` : null;
+
   // state
-  // TODO: persist by id
-  const [_expanded, setExpanded] = React.useState(props.startExpanded === true);
+  const [_expanded, setExpanded] = React.useState<boolean>(() => {
+    if (!persistentKey || typeof window === 'undefined') return defaultExpanded;
+    const storedValue = window.localStorage.getItem(persistentKey);
+    return storedValue === null ? defaultExpanded : storedValue === '1';
+  });
 
   // external state
   const isMobile = useIsMobile();
@@ -113,11 +123,41 @@ export function OptimaPanelGroupedList(props: {
   const smallerContentScaling = adjustContentScaling(contentScaling, -1);
 
   // derived state
-  const isCollapsible = !!props.persistentCollapsibleId;
+  const isCollapsible = !!persistentKey;
   const isExpanded = !isCollapsible || _expanded;
 
-  // handlers
+  // persistence: update localStorage when the toggle changes
+  React.useEffect(() => {
+    if (!persistentKey || typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(persistentKey, _expanded ? '1' : '0');
+    } catch (error) {
+      // non-fatal: storage might be unavailable (e.g., in private mode)
+      console.warn('OptimaPanelGroupedList: unable to persist state', error);
+    }
+  }, [persistentKey, _expanded]);
 
+  // persistence: load stored value whenever the key or default changes
+  React.useEffect(() => {
+    if (!persistentKey || typeof window === 'undefined') return;
+    const storedValue = window.localStorage.getItem(persistentKey);
+    const resolvedValue = storedValue === null ? defaultExpanded : storedValue === '1';
+    setExpanded(resolvedValue);
+  }, [defaultExpanded, persistentKey]);
+
+  // persistence: keep state in sync across tabs
+  React.useEffect(() => {
+    if (!persistentKey || typeof window === 'undefined') return;
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === persistentKey && typeof event.newValue === 'string') {
+        setExpanded(event.newValue === '1');
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [persistentKey]);
+
+  // handlers
   const toggleExpanded = React.useCallback(() => {
     setExpanded(expanded => !expanded);
   }, []);
